@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium App Scanner</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: radial-gradient(circle at top right, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh; color: #fff; font-family: 'Segoe UI', sans-serif;
+            background-attachment: fixed;
+        }
+        .premium-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            padding: 40px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .btn-fancy {
+            background: #ff0080; border: none; color: white; padding: 12px 30px;
+            border-radius: 12px; font-weight: bold; transition: 0.3s;
+        }
+        .btn-fancy:hover { background: #ff00cc; transform: scale(1.05); }
+        .table { color: #fff; background: rgba(0,0,0,0.2); }
+        th { color: #ffeb3b; }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <div class="premium-card text-center mb-5">
+        <h1 class="fw-bold">Prem Yadav App Scanner</h1>
+        <p class="opacity-75">Scan Play Store Data</p>
+        <form method="POST" class="mt-4">
+            {% csrf_token %}
+            <div class="input-group input-group-lg">
+                <input type="text" name="keyword" class="form-control bg-dark text-white border-0"
+                       placeholder="Enter application name..." value="{{ request.POST.keyword }}" required>
+                <button type="submit" class="btn btn-fancy">START SCAN</button>
+            </div>
+        </form>
+    </div>
+
+    {% if results %}
+    <div class="premium-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>App Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Website</th>
+                        <th>Installs</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in results %}
+                    <tr>
+                        <td class="fw-bold">{{ app.title }}</td>
+                        <td>{{ app.email }}</td>
+                        <td>{{ app.phone }}</td>
+                        <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            {{ app.website }}
+                        </td>
+                        <td>{{ app.installs }}</td>
+                        <td><span class="badge bg-warning text-dark">{{ app.score }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="text-center mt-4">
+            <a href="{% url 'download_excel' %}" class="btn btn-success btn-lg px-5">📥 Download Report (Excel)</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+</body>
+</html>
