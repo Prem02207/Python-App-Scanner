@@ -23,8 +23,7 @@
             <div class="input-group input-group-lg">
                 <input type="text" name="keyword" class="form-control"
                        placeholder="Search app..." required
-                       value="{{ request.POST.keyword }}"
-                       onkeydown="if(event.keyCode==13){this.form.submit()}">
+                       value="{{ keyword|default:'' }}">
                 <button type="submit" class="btn btn-primary">START SCAN</button>
             </div>
         </form>
@@ -32,7 +31,7 @@
 
     {% if results %}
     <div class="premium-card mt-4">
-        <h4 class="text-center mb-4">{{ results|length }} apps found for: "{{ request.POST.keyword }}"</h4>
+        <h4 class="text-center mb-4">{{ results|length }} apps found for: "{{ keyword }}"</h4>
         <div class="table-responsive">
             <table class="table table-dark table-hover align-middle">
                 <thead>
@@ -49,10 +48,10 @@
                     {% for app in results %}
                     <tr>
                         <td><a href="https://play.google.com/store/apps/details?id={{ app.appId }}" target="_blank" class="app-link">{{ app.title }}</a></td>
-                        <td>{{ app.email }}</td>
-                        <td>{{ app.phone }}</td>
+                        <td>{{ app.email|default:"N/A" }}</td>
+                        <td>{{ app.phone|default:"N/A" }}</td>
                         <td>
-                            {% if app.website != "N/A" %}
+                            {% if app.website and app.website != "N/A" %}
                                 <a href="https://{{ app.website }}" target="_blank" class="app-link">{{ app.website }}</a>
                             {% else %}
                                 <span class="text-muted">No Website</span>
@@ -70,7 +69,7 @@
         </div>
     </div>
     {% elif request.method == "POST" %}
-    <div class="alert alert-warning mt-4 text-center">No apps found with 500-5000 installs. Try a different keyword!</div>
+    <div class="alert alert-warning mt-4 text-center">No apps found. Try a different keyword!</div>
     {% endif %}
 </div>
 </body>
