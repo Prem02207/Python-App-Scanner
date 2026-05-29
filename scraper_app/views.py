@@ -14,7 +14,7 @@ def search_apps(request):
         if keyword:
             try:
                 # Google Play Store se search results fetch karein
-                apps = search(keyword, lang="en", country="in", n_hits=30) # n_hits kam rakhein taaki speed achhi rahe
+                apps = search(keyword, lang="en", country="in", n_hits=5) # n_hits kam rakhein taaki speed achhi rahe
 
                 for app in apps:
                     # Installs count ko integer mein badlein
