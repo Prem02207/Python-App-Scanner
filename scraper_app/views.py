@@ -8,59 +8,82 @@ from bs4 import BeautifulSoup
 
 def search_apps(request):
     results = []
+    # User dwara daala gaya keyword capture karein
+    keyword = request.POST.get('keyword', '')
+
     if request.method == "POST":
-        keyword = request.POST.get('keyword')
-        # 50 hits fetch karein taaki filter ke baad ache results milein
-        apps = search(keyword, lang="en", country="in", n_hits=50)
+        try:
+            # Google Play Store se search results fetch karein
+            apps = search(keyword, lang="en", country="in", n_hits=50)
 
-        for app in apps:
-            # Installs ko number mein convert karna
-            installs_str = app.get('installs', '0').replace(',', '').replace('+', '')
-            try:
-                installs_count = int(installs_str)
-            except:
-                installs_count = 0
+            for app in apps:
+                # Installs count ko integer mein badlein
+                installs_str = app.get('installs', '0').replace(',', '').replace('+', '')
+                installs_count = int(installs_str) if installs_str.isdigit() else 0
 
-            # Filter: 500 se 5000 ke beech
-            if 500 <= installs_count <= 5000:
-                url = f"https://play.google.com/store/apps/details?id={app['appId']}"
+                # 500 se 5000 install filter
+                if 500 <= installs_count <= 5000:
+                    url = f"https://play.google.com/store/apps/details?id={app['appId']}"
+                    email, website, phone = "N/A", "N/A", "N/A"
 
-                email, website, phone = "N/A", "N/A", "N/A"
+                    try:
+                        resp = requests.get(url, timeout=5)
+                        soup = BeautifulSoup(resp.content, 'html.parser')
 
-                try:
-                    response = requests.get(url, timeout=5)
-                    soup = BeautifulSoup(response.content, 'html.parser')
+                        # Email Extraction
+                        email_tag = soup.find('a', href=lambda x: x and x.startswith('mailto:'))
+                        if email_tag:
+                            email = email_tag['href'].replace('mailto:', '').split('?')[0]
 
-                    email_tag = soup.find('a', href=lambda x: x and x.startswith('mailto:'))
-                    if email_tag: email = email_tag.text
+                        # Precise Website Extraction (aria-label)
+                        web_tag = soup.find('a', {'aria-label': lambda x: x and 'website' in x.lower()})
+                        if web_tag and web_tag.has_attr('href'):
+                            website = web_tag['href'].replace('https://', '').replace('http://', '').split('/')[0]
 
-                    web_tag = soup.find('a', href=lambda
-                        x: x and 'http' in x and 'play.google' not in x and 'mailto' not in x)
-                    if web_tag: website = web_tag['href']
+                        # Phone Extraction
+                        phone_tag = soup.find('a', href=lambda x: x and x.startswith('tel:'))
+                        if phone_tag:
+                            phone = phone_tag.text
+                    except:
+                        pass  # Agar site load na ho toh ignore karein
 
-                    phone_tag = soup.find('a', href=lambda x: x and x.startswith('tel:'))
-                    if phone_tag: phone = phone_tag.text
-                except:
-                    pass
+                    results.append({
+                        'title': app.get('title'),
+                        'appId': app['appId'],
+                        'installs': app.get('installs'),
+                        'score': app.get('score', 0),
+                        'email': email,
+                        'website': website,
+                        'phone': phone
+                    })
 
-                results.append({
-                    'title': app.get('title', 'N/A'),
-                    'installs': app.get('installs', 'N/A'),
-                    'score': app.get('score', 0),
-                    'email': email,
-                    'website': website,
-                    'phone': phone
-                })
+            # Data aur Keyword ko Session mein save karein taaki Download feature use kar sake
+            request.session['search_data'] = results
+            request.session['search_keyword'] = keyword
 
-        request.session['search_data'] = results
+        except Exception as e:
+            print(f"Error: {e}")
+
     return render(request, 'index.html', {'results': results})
 
 
 def download_excel(request):
+    # Session se data aur keyword nikalen
     data = request.session.get('search_data')
-    if not data: return HttpResponse("No data found.")
+    keyword = request.session.get('search_keyword', 'apps_data')
+
+    if not data:
+        return HttpResponse("No data available to download.")
+
+    # Pandas DataFrame banayein
     df = pd.DataFrame(data)
+
+    # Dynamic Filename: Keyword_apps.xlsx
+    filename = f"{keyword}_apps.xlsx"
+
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename="filtered_apps.xlsx"'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    # Excel mein data export karein
     df.to_excel(response, index=False)
     return response

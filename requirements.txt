@@ -1,0 +1,7 @@
+django
+gunicorn
+requests
+beautifulsoup4
+google-play-scraper
+pandas
+openpyxl

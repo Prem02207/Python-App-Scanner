@@ -7,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 SECRET_KEY = 'django-insecure-o=u!&j6g)s9*l3w7@0x#)t1w!5-!#m4z5+n*q^v&t(n)e#c8w='
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*', 'your-project-name.railway.app']
 
 # Application definition
 # my_project/settings.py
