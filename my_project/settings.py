@@ -1,16 +1,19 @@
-from pathlib import Path
 import os
+from pathlib import Path
+import dj_database_url # Render database ke liye zaroori hai
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-SECRET_KEY = 'django-insecure-o=u!&j6g)s9*l3w7@0x#)t1w!5-!#m4z5+n*q^v&t(n)e#c8w='
-DEBUG = True
-ALLOWED_HOSTS = ['*', 'your-project-name.railway.app']
+# Security settings (Render par Secret Key environment variable se lena best hai)
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-default-key-for-local')
 
-# Application definition
-# my_project/settings.py
+# Render par DEBUG False hona chahiye
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+
+# Render aur Railway ke liye ALLOWED_HOSTS
+ALLOWED_HOSTS = ['*']
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -18,15 +21,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    'scraper_app',  # <--- Yeh yahan hona chahiye
+    'scraper_app',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # Static files ke liye
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',  # <--- Yeh sahi line hai
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -37,7 +40,7 @@ ROOT_URLCONF = 'my_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'scraper_app/templates'], # Templates ka path
+        'DIRS': [os.path.join(BASE_DIR, 'scraper_app/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -52,20 +55,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'my_project.wsgi.application'
 
-# Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# Static files configuration (Render ke liye zaroori)
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Internationalization
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
-USE_I18N = True
-USE_TZ = True
-
-# Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
