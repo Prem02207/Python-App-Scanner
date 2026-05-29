@@ -1,17 +1,14 @@
 import os
 from pathlib import Path
-import dj_database_url # Render database ke liye zaroori hai
+import dj_database_url
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Security settings (Render par Secret Key environment variable se lena best hai)
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-default-key-for-local')
 
 # Render par DEBUG False hona chahiye
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-# Render aur Railway ke liye ALLOWED_HOSTS
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
@@ -26,7 +23,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # Static files ke liye
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -55,11 +52,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'my_project.wsgi.application'
 
-# Static files configuration (Render ke liye zaroori)
+# Static files configuration (Clean version)
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-import os
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
